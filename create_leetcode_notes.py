@@ -2,14 +2,9 @@
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import URLError
-import re
 import json
+import re
 import sys
-
-
-# ============================================================
-# CONFIGURATION
-# ============================================================
 
 SOURCE_URL = (
     "https://raw.githubusercontent.com/"
@@ -17,16 +12,18 @@ SOURCE_URL = (
     "main/TopLeetCodeProblems.md"
 )
 
+SOURCE_PAGE = (
+    "https://github.com/WeCode-Community-Dev/"
+    "FAANG-Coding-Interview-Questions/blob/main/"
+    "TopLeetCodeProblems.md"
+)
+
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "LeetCode_Notes"
 
-# False = never overwrite existing notes.
+# Keep existing files safe.
 OVERWRITE_EXISTING = False
 
-
-# ============================================================
-# DOWNLOAD THE SOURCE FILE
-# ============================================================
 
 def download_source():
     request = Request(
@@ -39,36 +36,27 @@ def download_source():
             content = response.read().decode("utf-8")
 
         if not content.strip():
-            raise ValueError("The downloaded source file is empty.")
+            raise ValueError("The source file is empty.")
 
-        if "404: Not Found" in content[:200]:
-            raise ValueError("GitHub returned a 404 error.")
-
-        print("Source downloaded successfully.")
         return content
 
     except (URLError, TimeoutError, ValueError) as error:
         raise RuntimeError(
-            f"Could not download the problem list: {error}\n"
-            "Check your internet connection and the GitHub URL."
+            f"Could not download the source list: {error}"
         ) from error
 
-
-# ============================================================
-# PARSE THE MARKDOWN SOURCE
-# ============================================================
 
 def slugify(value):
     value = value.lower().strip()
     value = re.sub(r"[^\w\s-]", "", value)
-    value = re.sub(r"[\s_-]+", "-", value)
-    return value.strip("-") or "untitled"
+    value = re.sub(r"[\s_-]+", "_", value)
+    return value.strip("_") or "untitled"
 
 
 def parse_problems(markdown):
     problems = []
     current_topic = "General"
-    seen = set()
+    by_title = {}
 
     for line in markdown.splitlines():
         heading = re.match(
@@ -79,256 +67,223 @@ def parse_problems(markdown):
         if heading:
             heading_text = heading.group(1).strip()
 
-            # Ignore the document's main title.
-            if not problems or len(heading_text) < 100:
+            if heading_text.lower() not in {
+                "top leetcode problems",
+                "table of contents",
+                "contents",
+            }:
                 current_topic = heading_text
 
             continue
 
-        # Only inspect Markdown list entries.
-        item = re.match(r"^\s*[-*+]\s+(.+?)\s*$", line)
+        item = re.match(
+            r"^\s*[-*+]\s+(?:\[[ xX]\]\s*)?"
+            r"\[([^\]]+)\]\((https?://[^)]+)\)",
+            line
+        )
 
         if not item:
             continue
 
-        entry = item.group(1).strip()
-        title = None
-        problem_url = None
+        title = item.group(1).strip()
+        url = item.group(2).strip()
 
-        # Format: [Two Sum](https://leetcode.com/problems/two-sum/)
-        link_match = re.match(
-            r"^\[([^\]]+)\]\((https?://[^)]+)\)",
-            entry
-        )
-
-        if link_match:
-            title = link_match.group(1).strip()
-            problem_url = link_match.group(2).strip()
-
-        # Format: [Input] Two Sum
-        elif re.match(r"^\[Input\]\s+", entry, re.IGNORECASE):
-            title = re.sub(
-                r"^\[Input\]\s+",
-                "",
-                entry,
-                flags=re.IGNORECASE
-            ).strip()
-
-        else:
-            # Support simple bullet lists of problem names.
-            # Ignore ordinary prose and long descriptions.
-            plain = re.sub(r"`", "", entry).strip()
-
-            if (
-                len(plain) <= 100
-                and not plain.startswith("[")
-                and not plain.startswith("http")
-                and not plain.endswith(":")
-            ):
-                title = plain
-
-        if not title:
+        if not title or "leetcode.com/problems/" not in url:
             continue
 
-        # Ignore obvious navigation and non-problem headings.
-        if title.lower() in {
-            "input", "output", "table of contents",
-            "readme", "leetcode", "problems"
-        }:
+        key = title.casefold()
+
+        if key in by_title:
+            existing = by_title[key]
+            if current_topic not in existing["topics"]:
+                existing["topics"].append(current_topic)
             continue
 
-        # Ignore duplicates while preserving source order.
-        key = (current_topic.lower(), title.lower())
-
-        if key in seen:
-            continue
-
-        seen.add(key)
-
-        problems.append({
+        problem = {
             "title": title,
             "topic": current_topic,
-            "url": problem_url or (
-                "https://leetcode.com/problems/"
-                + slugify(title) + "/"
-            )
-        })
+            "topics": [current_topic],
+            "url": url,
+            "status": "Not started",
+            "note_file": ""
+        }
+
+        by_title[key] = problem
+        problems.append(problem)
 
     if not problems:
         raise ValueError(
-            "No problems were detected in the source.\n"
-            "The source Markdown format may need a parser adjustment."
+            "No linked LeetCode problems were detected. "
+            "Check the source file's Markdown format."
         )
 
     return problems
 
-
-# ============================================================
-# CREATE THE STUDY TEMPLATE
-# ============================================================
 
 def create_problem_markdown(problem, number):
     title = problem["title"]
     topic = problem["topic"]
     url = problem["url"]
 
-    # Build the document as a list of lines. This avoids
-    # nested multiline-string syntax errors.
     lines = [
-        f"# {number:03d}. {title}",
+        "# PYTHON NOTES",
         "",
-        f"- **Topic:** {topic}",
-        "- **Difficulty:** To be verified",
-        f"- **LeetCode:** [{title}]({url})",
-        "- **Progress:** Not started",
+        f"**Source list:** [{SOURCE_PAGE}]({SOURCE_PAGE})",
         "",
-        "## 1. Problem in Simple English",
+        f"## Problem — {topic}",
         "",
-        "Explain the problem in beginner-friendly language.",
+        f"**Problem {number}: {title}**",
         "",
-        "## 2. Problem Statement",
+        f"**LeetCode:** {url}",
         "",
-        "Summarize the requirements and constraints.",
+        "**Difficulty:** To be verified",
         "",
-        "## 3. Examples",
+        "**Progress:** Not started",
+        "",
+        "## 1. PROBLEM STATEMENT",
+        "",
+        f"Explain the requirements of {title} in your own words.",
+        "Include all important rules and constraints.",
+        "",
+        "## 2. EXAMPLES",
         "",
         "### Example 1",
         "",
-        "**Input:**",
+        "**Input:** Add the verified input here.",
         "",
-        "Add the example input here.",
+        "**Output:** Add the verified output here.",
         "",
-        "**Output:**",
+        "**Explanation:** Explain why the output is correct.",
         "",
-        "Add the expected output here.",
+        "### Additional examples",
         "",
-        "**Explanation:**",
+        "Add the other verified examples and explanations.",
         "",
-        "Explain why the output is correct.",
+        "## 3. CONSTRAINTS",
         "",
-        "## 4. What Is This Problem Testing?",
+        "Record the verified input limits and special rules.",
         "",
-        "- Data structures:",
-        "- Algorithms:",
-        "- Important constraints:",
+        "## 4. LOGIC — EXPLAIN LIKE A BEGINNER",
         "",
-        "## 5. Brute-Force Approach",
+        "Use an everyday story to explain the problem.",
+        "Explain what we know, what we need, and why the logic works.",
         "",
-        "Explain the simplest correct approach.",
+        "### Step-by-step algorithm",
         "",
-        "### Logic",
-        "",
-        "1. Describe the first step.",
-        "2. Describe the next step.",
+        "1. First step.",
+        "2. Next step.",
         "3. Explain how the answer is obtained.",
         "",
-        "### Complexity",
+        "## 5. BRUTE-FORCE SOLUTION",
         "",
-        "- **Time:** To be determined",
-        "- **Space:** To be determined",
-        "",
-        "## 6. Optimized Approach",
-        "",
-        "Explain the intuition behind the improved solution.",
-        "",
-        "### Algorithm",
-        "",
-        "1. Step one.",
-        "2. Step two.",
-        "3. Step three.",
-        "",
-        "## 7. Python Solution",
+        "Explain the simplest correct approach and its limitations.",
         "",
         "```python",
-        "# Add the complete, verified solution here.",
+        "# Add the complete brute-force solution.",
         "```",
         "",
-        "### Explain the Code",
+        "**Time complexity:** To be verified.",
         "",
-        "Explain important lines, variables, conditions, and loops.",
+        "**Auxiliary space:** To be verified.",
         "",
-        "## 8. Dry Run",
+        "## 6. OPTIMIZED SOLUTION",
         "",
-        "| Step | Current value | Variables | What happens? |",
+        "Explain the improvement and why it works.",
+        "",
+        "### Python code",
+        "",
+        "```python",
+        "# Add the complete, verified LeetCode solution.",
+        "```",
+        "",
+        "### Line-by-line explanation",
+        "",
+        "Explain variables, loops, conditions, data structures,",
+        "and return values in beginner-friendly language.",
+        "",
+        "## 7. DRY RUN",
+        "",
+        "| Step | Current value | Memory / variables | Action |",
         "|---|---|---|---|",
-        "| 1 | — | — | Start the algorithm |",
+        "| 1 | — | — | Initialize the algorithm |",
         "| 2 | — | — | Process the input |",
-        "| 3 | — | — | Obtain the result |",
+        "| 3 | — | — | Continue until the result is found |",
         "",
-        "## 9. Complexity Analysis",
+        "Replace this table with a real walkthrough.",
         "",
-        "- **Time complexity:** To be determined and explained.",
-        "- **Space complexity:** To be determined and explained.",
+        "## 8. CONCEPTS",
         "",
-        "## 10. Edge Cases",
+        "Explain each data structure, algorithm, and Python concept.",
+        "Link to relevant foundation lessons in this repository.",
         "",
-        "- Empty or minimum-size input, if permitted.",
-        "- Duplicate values, if relevant.",
-        "- Negative numbers or zero, if relevant.",
-        "- Maximum constraints and boundary cases.",
+        "## 9. COMPLEXITY ANALYSIS",
         "",
-        "## 11. Common Mistakes",
+        "**Time:** Explain and verify the Big-O complexity.",
         "",
-        "Explain mistakes specific to this problem.",
+        "**Auxiliary space:** Explain additional memory usage.",
         "",
-        "## 12. Key Takeaway",
+        "## 10. EDGE CASES",
         "",
-        "Explain the reusable problem-solving pattern.",
+        "List problem-specific boundary cases and expected results.",
         "",
-        "## 13. Practice Variations",
+        "## 11. COMMON MISTAKES",
         "",
-        "1. Variation one.",
-        "2. Variation two.",
+        "Explain likely bugs and how to avoid them.",
         "",
-        "## 14. Revision Checklist",
+        "## 12. PRACTICE QUESTIONS",
         "",
-        "- [ ] I understand the problem.",
-        "- [ ] I can explain the logic without notes.",
-        "- [ ] I can write the solution independently.",
-        "- [ ] I understand time and space complexity.",
-        "- [ ] I tested the important edge cases.",
-        ""
+        "Add exercises, hints, and worked answers.",
+        "",
+        "## 13. REVISION CARD",
+        "",
+        "- **Pattern:** To be identified.",
+        "- **Key idea:** To be completed.",
+        "- **Time complexity:** To be verified.",
+        "- **Auxiliary space:** To be verified.",
+        "",
+        "## 14. COMPLETION CHECKLIST",
+        "",
+        "- [ ] Problem requirements verified",
+        "- [ ] Examples and constraints verified",
+        "- [ ] Beginner-friendly logic completed",
+        "- [ ] Brute-force solution reviewed",
+        "- [ ] Optimized Python solution reviewed",
+        "- [ ] Dry run completed",
+        "- [ ] Complexity verified",
+        "- [ ] Edge cases tested",
+        "- [ ] Practice questions added",
+        "- [ ] Final review completed",
+        "",
     ]
 
     return "\n".join(lines)
 
 
-# ============================================================
-# GENERATE ALL FILES
-# ============================================================
-
 def main():
-    print("=" * 55)
-    print("       LEETCODE MARKDOWN NOTES GENERATOR")
-    print("=" * 55)
-
+    print("Downloading the original problem list...")
     source = download_source()
     problems = parse_problems(source)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Save the original list for reference.
     (OUTPUT_DIR / "source_problem_list.md").write_text(
-        source,
-        encoding="utf-8"
+        source, encoding="utf-8"
     )
 
-    # Keep track of topic folders and problem numbers.
     topic_folders = {}
-    topic_counts = {}
-    index_lines = [
-        "# Python LeetCode Interview Notes",
-        "",
-        f"**Problems detected:** {len(problems)}",
-        "",
-        "Open an individual problem to study its logic and solution.",
-        "",
-        "## Table of Contents",
-        ""
-    ]
-
     created = 0
     skipped = 0
+    index_lines = [
+        "# Python LeetCode Study Notes",
+        "",
+        f"**Unique problems detected:** {len(problems)}",
+        "",
+        "Each problem has its own detailed study-note file.",
+        "Files still need their explanations and solutions completed.",
+        "",
+        "## Problems by topic",
+        "",
+    ]
 
     for number, problem in enumerate(problems, start=1):
         topic = problem["topic"]
@@ -338,78 +293,77 @@ def main():
                 f"{len(topic_folders) + 1:02d}_"
                 f"{slugify(topic)}"
             )
-
             topic_folders[topic] = folder_name
-            topic_counts[topic] = 0
 
-        topic_counts[topic] += 1
+        filename = (
+            f"{number:03d}_{slugify(problem['title'])}.md"
+        )
 
         folder = OUTPUT_DIR / topic_folders[topic]
         folder.mkdir(parents=True, exist_ok=True)
-
-        filename = (
-            f"{number:03d}_"
-            f"{slugify(problem['title'])}.md"
-        )
 
         file_path = folder / filename
         relative_path = file_path.relative_to(
             OUTPUT_DIR
         ).as_posix()
 
+        problem["note_file"] = relative_path
+
         if file_path.exists() and not OVERWRITE_EXISTING:
             skipped += 1
         else:
-            content = create_problem_markdown(problem, number)
-
             file_path.write_text(
-                content,
+                create_problem_markdown(problem, number),
                 encoding="utf-8"
             )
-
             created += 1
 
         index_lines.append(
-            f"- [ ] [{problem['title']}]({relative_path}) "
-            f"— {topic}"
+            f"- [ ] [{problem['title']}]({relative_path})"
+            f" — {topic}"
         )
 
-    # Create the master index.
     index_lines.extend([
-        "",
-        "## Generation Summary",
-        "",
-        f"- Problems detected: {len(problems)}",
-        f"- Files created or replaced: {created}",
-        f"- Existing files skipped: {skipped}",
         "",
         "## Source",
         "",
-        f"[Original GitHub list]({SOURCE_URL})",
-        ""
+        f"[Original problem collection]({SOURCE_PAGE})",
+        "",
     ])
 
     (OUTPUT_DIR / "README.md").write_text(
-        "\n".join(index_lines),
-        encoding="utf-8"
+        "\n".join(index_lines), encoding="utf-8"
     )
 
-    # Save a manifest for future automation.
     (OUTPUT_DIR / "problems_manifest.json").write_text(
         json.dumps(problems, indent=2, ensure_ascii=False),
         encoding="utf-8"
     )
 
-    print()
-    print("SUCCESS!")
-    print(f"Output folder: {OUTPUT_DIR}")
-    print(f"Problems detected: {len(problems)}")
-    print(f"Files created or replaced: {created}")
+    tracker = [
+        "# LeetCode Progress Tracker",
+        "",
+        f"- Unique problems detected: {len(problems)}",
+        "- Completed solutions: 0 verified by this generator",
+        f"- Notes created or updated: {created}",
+        f"- Existing notes skipped: {skipped}",
+        "",
+        "A generated template is not a completed solution.",
+        "Update completion status only after reviewing the content.",
+        "",
+    ]
+
+    (OUTPUT_DIR / "PROGRESS_TRACKER.md").write_text(
+        "\n".join(tracker), encoding="utf-8"
+    )
+
+    print("\nGeneration finished.")
+    print(f"Unique problems: {len(problems)}")
+    print(f"Created/updated files: {created}")
     print(f"Existing files skipped: {skipped}")
     print(f"Topic folders: {len(topic_folders)}")
-    print()
-    print("Open LeetCode_Notes/README.md to browse your notes.")
-    print("Note: generated files contain study templates, not solutions.")
+    print(f"Output: {OUTPUT_DIR}")
+    print("\nReview LeetCode_Notes/README.md next.")
 
 
 if __name__ == "__main__":
