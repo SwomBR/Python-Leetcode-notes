@@ -7,6 +7,7 @@
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0e0b16">
 <title>Python LeetCode Notes</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <style>
 :root {
   --bg: #0e0b16;
@@ -84,6 +85,10 @@ button, input { font: inherit; color: inherit; }
 .nav-icon.sym { font: 16px/1 "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", sans-serif; }
 .nav-link[aria-current="page"] .nav-icon { background: var(--accent-strong); color: #fff; }
 .nav-count { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.side-search .search { height: 40px; padding: 0 12px; font-size: 14px; border-radius: 10px; }
+.side-search .nav-list { margin-top: 8px; }
+.side-search .nav-link .nav-icon { font-size: 10px; }
+.side-search .empty-hit { padding: 8px 10px; font-size: 13.5px; color: var(--muted); }
 .sidebar-foot { margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
 .sidebar-foot a { color: var(--text-2); }
 
@@ -201,6 +206,7 @@ main:focus { outline: none; }
 .detail-card dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 22px; margin: 0; }
 .detail-card dt { color: var(--muted); font-size: 14px; }
 .detail-card dd { margin: 0; overflow-wrap: anywhere; }
+.detail-card code { font: 13px var(--mono); background: var(--surface-2); padding: 1px 6px; border-radius: 5px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px; border-radius: 10px;
@@ -212,6 +218,48 @@ main:focus { outline: none; }
 .btn.primary:hover { background: #7c3aed; }
 
 .loading { color: var(--muted); padding: 40px 0; }
+
+/* Rendered Markdown note */
+.md { margin-top: 24px; padding: 32px 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); line-height: 1.7; }
+.md > :first-child { margin-top: 0; }
+.md h1 { font-size: 28px; line-height: 1.25; margin: 0 0 20px; }
+.md h2 { font-size: 22px; margin: 40px 0 14px; padding-top: 22px; border-top: 1px solid var(--border); letter-spacing: -.01em; }
+.md h2:first-of-type { border-top: none; padding-top: 0; margin-top: 8px; }
+.md h3 { font-size: 18px; margin: 28px 0 10px; }
+.md h4 { font-size: 16px; margin: 20px 0 8px; }
+.md hr { display: none; }
+.md p, .md li { overflow-wrap: anywhere; color: var(--text-2); }
+.md strong { color: var(--text); }
+.md blockquote { margin: 16px 0; padding: 10px 16px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; }
+.md blockquote p { margin: 6px 0; color: var(--text); }
+.md code { font: .88em var(--mono); background: var(--surface-2); color: var(--text); padding: .15em .4em; border-radius: 5px; }
+.md pre { position: relative; margin: 16px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.md pre code { display: block; padding: 16px 18px; overflow-x: auto; background: transparent !important; font-size: 14px; line-height: 1.55; border-radius: 0; }
+.copy-btn { position: absolute; top: 8px; right: 8px; padding: 3px 10px; font-size: 12px; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text-2); cursor: pointer; opacity: 0; transition: opacity .15s; }
+.md pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+.table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--border); border-radius: 10px; }
+.md table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.md th, .md td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.md th { background: var(--surface-2); font-weight: 600; }
+.md tr:last-child td { border-bottom: none; }
+.md details { margin: 10px 0 14px; border: 1px dashed var(--border-strong); border-radius: 8px; padding: 8px 14px; background: var(--bg-2); }
+.md summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+.md input[type="checkbox"] { margin-right: 6px; accent-color: var(--good); }
+.md ul:has(> li > input[type="checkbox"]) { list-style: none; padding-left: 4px; }
+.note-path { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.note-path code { font: 12.5px var(--mono); overflow-wrap: anywhere; }
+.problem-path { display: block; margin-top: 4px; font: 12px var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.chapter-toc { margin-top: 20px; padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.chapter-toc summary { cursor: pointer; font-weight: 600; color: var(--text); }
+.chapter-toc ol { margin: 10px 0 2px; padding-left: 22px; columns: 2 260px; column-gap: 28px; }
+.chapter-toc li { margin: 0 0 6px; font-size: 14.5px; break-inside: avoid; }
+.chapter-toc a { color: var(--text-2); text-decoration: none; }
+.chapter-toc a:hover { color: var(--accent); text-decoration: underline; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.pager a { display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); text-decoration: none; font-weight: 600; transition: border-color .15s; }
+.pager a:hover { border-color: var(--accent-strong); }
+.pager small { color: var(--muted); font-weight: 500; font-size: 13px; }
+.pager .next { text-align: right; grid-column: 2; }
 footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
 
 /* ---------- Responsive ---------- */
@@ -244,6 +292,9 @@ footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid va
   .detail-card dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .detail-card dd { margin-bottom: 10px; }
   .notice { flex-direction: column; padding: 18px; }
+  .md { padding: 22px 16px; }
+  .pager { grid-template-columns: minmax(0, 1fr); }
+  .pager .next { grid-column: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
@@ -259,6 +310,11 @@ footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid va
       <span class="brand-logo" aria-hidden="true">Py</span>
       <span class="brand-name">LeetCode Notes<small>Python · Top 75</small></span>
     </a>
+    <div class="side-search" role="search">
+      <label class="sr-only" for="side-search">Search problems by title</label>
+      <input class="search" id="side-search" type="search" placeholder="Search problems…" autocomplete="off" aria-controls="side-results">
+      <ul class="nav-list" id="side-results" aria-label="Search results" hidden></ul>
+    </div>
     <nav aria-label="Main">
       <ul class="nav-list">
         <li><a class="nav-link" href="#/" data-route="home"><span class="nav-icon sym" aria-hidden="true">⌂</span>Home<span class="nav-count" id="nav-total"></span></a></li>
@@ -290,6 +346,9 @@ footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid va
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 (() => {
   "use strict";
@@ -334,19 +393,22 @@ footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid va
     return `<span class="pill warn">${escapeHtml(p.status || "In progress")}</span>`;
   }
 
-  function problemRow(p) {
+  const problemHref = (p, topic) => `#/problem/${numberOf(p)}${topic && topic.name !== p.topic ? `/${topic.slug}` : ""}`;
+
+  function problemRow(p, topic) {
     const tags = (p.topics || [p.topic]).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
     const premium = isPremium(p) ? `<span class="tag">LeetCode Premium</span>` : "";
-    return `<li><a class="problem" href="#/problem/${numberOf(p)}">
+    return `<li><a class="problem" href="${problemHref(p, topic)}">
       <span class="problem-num">${numberOf(p)}</span>
       <span><span class="problem-title">${escapeHtml(cleanTitle(p.title))}</span>
-        <span class="problem-meta">${tags}${premium}</span></span>
+        <span class="problem-meta">${tags}${premium}</span>
+        <span class="problem-path">${escapeHtml(notePath(p))}</span></span>
       <span style="display:flex;align-items:center;gap:12px">${statusPill(p)}<span class="arrow" aria-hidden="true">›</span></span>
     </a></li>`;
   }
 
-  function problemList(list, emptyHtml) {
-    return list.length ? `<ul class="problem-list">${list.map(problemRow).join("")}</ul>` : `<div class="empty">${emptyHtml}</div>`;
+  function problemList(list, emptyHtml, topic) {
+    return list.length ? `<ul class="problem-list">${list.map(p => problemRow(p, topic)).join("")}</ul>` : `<div class="empty">${emptyHtml}</div>`;
   }
 
   function topicCard(t) {
@@ -442,42 +504,198 @@ footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid va
       ${sharedNote}
       <section class="section" aria-labelledby="topic-problems-title" style="margin-top:32px">
         <div class="section-head"><h2 id="topic-problems-title">Problems</h2><p>${plural(list.length, "problem")}</p></div>
-        ${problemList(list, `<strong>No notes for ${escapeHtml(topic.name)} yet</strong>Problems for this topic have not been written. They will appear here once they are added to the manifest.`)}
+        ${problemList(list, `<strong>No notes for ${escapeHtml(topic.name)} yet</strong>Problems for this topic have not been written. They will appear here once they are added to the manifest.`, topic)}
       </section>
       ${footer()}`;
   }
 
-  function showProblem(num) {
+  // Notes live next to the manifest; a relative URL works both locally and under /Python-Leetcode-notes/ on GitHub Pages.
+  const NOTES_DIR = MANIFEST_URL.slice(0, MANIFEST_URL.lastIndexOf("/") + 1);
+  const notePath = p => NOTES_DIR + p.note_file;
+  const SAFE_NOTE_FILE = /^[\w-]+\/[\w-]+\.md$/;
+  let renderToken = 0;
+
+  // The 14 sections every study note is written with (see create_leetcode_notes.py); used to flag incomplete notes.
+  const EXPECTED_SECTIONS = [
+    "Problem Overview", "Problem Explanation", "Everyday Analogy", "Step-by-Step Logic", "Brute-Force Solution",
+    "Optimized Solution", "Line-by-Line Explanation", "Dry Run", "Concepts, Data Structures, and Patterns",
+    "Complexity Analysis", "Edge Cases", "Common Mistakes and Debugging", "Practice Questions",
+    "Revision Summary and Completion Checklist",
+  ];
+
+  // A problem in several topics keeps the topic the reader came from, so previous/next stays inside it.
+  function contextTopic(p, slug) {
+    const t = topicBySlug(slug);
+    return t && (p.topics || [p.topic]).includes(t.name) ? t : topicByName(p.topic);
+  }
+
+  function pager(p, topic) {
+    if (!topic) return "";
+    const list = problemsIn(topic);
+    const i = list.indexOf(p);
+    const prev = list[i - 1], next = list[i + 1];
+    const link = (x, cls, label) => `<a class="${cls}" href="${problemHref(x, topic)}"><small>${label}</small>${escapeHtml(numberOf(x))}. ${escapeHtml(cleanTitle(x.title))}</a>`;
+    if (!prev && !next) return "";
+    return `<nav class="pager" aria-label="More ${escapeHtml(topic.name)} problems">
+      ${prev ? link(prev, "prev", `← Previous in ${escapeHtml(topic.name)}`) : ""}
+      ${next ? link(next, "next", `Next in ${escapeHtml(topic.name)} →`) : ""}
+    </nav>`;
+  }
+
+  function showProblem(num, slug) {
     const p = problems.find(x => numberOf(x) === num);
     if (!p) return showNotFound(`There is no problem numbered “${num}” in the manifest.`);
-    const topic = topicByName(p.topic);
+    const topic = contextTopic(p, slug);
     document.title = `${num}. ${cleanTitle(p.title)} · Python LeetCode Notes`;
     view.innerHTML = `
       <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / ${topic ? `<a href="#/topic/${topic.slug}">${escapeHtml(topic.name)}</a>` : escapeHtml(p.topic)} / ${escapeHtml(num)}</nav>
       <div class="page-head"><span class="nav-icon" aria-hidden="true">${escapeHtml(num)}</span><h1>${escapeHtml(cleanTitle(p.title))}</h1></div>
-
-      <div class="notice" role="note">
-        <span class="notice-icon" aria-hidden="true">!</span>
-        <div>
-          <h2>This page is not built yet</h2>
-          <p>The study note for this problem exists, but showing it inside this website is the next milestone. For now this page only lists the note's details.</p>
-          <p>Note file: <code>LeetCode_Notes/${escapeHtml(p.note_file)}</code></p>
-        </div>
-      </div>
+      <p class="lead" id="note-subtitle" hidden></p>
 
       <div class="detail-card">
         <dl>
+          <dt>Problem ID</dt><dd>${escapeHtml(num)}</dd>
           <dt>Topic${(p.topics || []).length > 1 ? "s" : ""}</dt><dd>${escapeHtml((p.topics || [p.topic]).join(", "))}</dd>
           <dt>Note status</dt><dd>${statusPill(p)}</dd>
           ${p.review_note ? `<dt>Review notes</dt><dd>${escapeHtml(p.review_note)}</dd>` : ""}
           ${isPremium(p) ? `<dt>Access</dt><dd>LeetCode Premium problem</dd>` : ""}
+          <dt>Note file</dt><dd><code>${escapeHtml(notePath(p))}</code></dd>
         </dl>
         <div class="actions">
-          ${topic ? `<a class="btn primary" href="#/topic/${topic.slug}">← Back to ${escapeHtml(topic.name)}</a>` : ""}
-          ${p.url ? `<a class="btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">Open on LeetCode ↗</a>` : ""}
+          ${p.url ? `<a class="btn primary" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">Practice on LeetCode ↗</a>` : ""}
+          ${topic ? `<a class="btn" href="#/topic/${topic.slug}">← Back to ${escapeHtml(topic.name)}</a>` : ""}
         </div>
       </div>
+
+      <div id="note-toc"></div>
+      <div id="note-body"><p class="loading">Loading note…</p></div>
+      ${pager(p, topic)}
       ${footer()}`;
+    loadNote(p);
+  }
+
+  function noteError(p, heading, message) {
+    $("#note-body").innerHTML = `
+      <div class="notice" role="alert">
+        <span class="notice-icon" aria-hidden="true">!</span>
+        <div>
+          <h2>${escapeHtml(heading)}</h2>
+          <p>${message}</p>
+          <p>Expected file: <code>${escapeHtml(notePath(p))}</code></p>
+        </div>
+      </div>`;
+  }
+
+  async function loadNote(p) {
+    const token = ++renderToken;
+    const title = escapeHtml(cleanTitle(p.title));
+    if (!SAFE_NOTE_FILE.test(p.note_file)) {
+      return noteError(p, "Note not found", `The manifest entry for “${title}” has an invalid note path.`);
+    }
+    if (!window.marked || !window.DOMPurify) {
+      return noteError(p, "Could not show this note", "The Markdown renderer did not load from the CDN. Check your internet connection and reload the page.");
+    }
+
+    let text;
+    try {
+      const res = await fetch(notePath(p), { cache: "no-cache" });
+      if (res.status === 404) {
+        if (token === renderToken) noteError(p, "Note not found", `The study note for “${title}” is missing. Add the file below, or fix <code>note_file</code> for this problem in <code>problems_manifest.json</code>.`);
+        return;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      text = await res.text();
+    } catch (err) {
+      console.error(`Failed to load note for ${p.title}:`, err);
+      if (token === renderToken) noteError(p, "Could not load this note", `The note for “${title}” could not be downloaded (${escapeHtml(err.message)}). Reload the page to try again.`);
+      return;
+    }
+    if (token !== renderToken) return; // the reader already moved to another page
+
+    const html = DOMPurify.sanitize(marked.parse(text), { ADD_ATTR: ["target"] });
+    $("#note-body").innerHTML = `<article class="md" id="article">${html}</article>`;
+    enhanceArticle($("#article"), p);
+  }
+
+  const headingId = s => s.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+
+  function scrollToHeading(id) {
+    const target = id && document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function enhanceArticle(article, p) {
+    // The page header already shows the title, so drop the note's duplicate top-level heading,
+    // but keep its wording visible when the note uses a different name (e.g. "Combination Sum IV").
+    const first = article.firstElementChild;
+    if (first && first.tagName === "H1") {
+      const noteTitle = first.textContent.replace(/^\d+\.\s*/, "").trim();
+      if (noteTitle.toLowerCase() !== cleanTitle(p.title).toLowerCase()) {
+        const sub = $("#note-subtitle");
+        sub.textContent = `Note title: ${noteTitle}`;
+        sub.hidden = false;
+      }
+      first.remove();
+    }
+
+    // GitHub-style heading ids so in-note links such as "#9-concepts" keep working.
+    const seen = {};
+    $$("h1, h2, h3, h4", article).forEach(h => {
+      let id = headingId(h.textContent);
+      if (seen[id] !== undefined) id = `${id}-${++seen[id]}`; else seen[id] = 0;
+      h.id = id;
+    });
+
+    // Links: other notes → their problem page, same-page anchors → scroll, web links → new tab.
+    $$("a[href]", article).forEach(a => {
+      const href = a.getAttribute("href");
+      if (/^https?:/i.test(href)) { a.target = "_blank"; a.rel = "noopener"; return; }
+      if (href.startsWith("#")) {
+        a.addEventListener("click", e => { e.preventDefault(); scrollToHeading(decodeURIComponent(href.slice(1))); });
+        return;
+      }
+      const m = href.match(/^([^#]+\.md)(?:#(.*))?$/);
+      if (!m) return;
+      const resolved = decodeURIComponent(new URL(m[1], "http://notes.local/" + p.note_file).pathname.slice(1));
+      const target = problems.find(x => x.note_file === resolved);
+      if (target) a.setAttribute("href", `#/problem/${numberOf(target)}`);
+      else a.setAttribute("href", NOTES_DIR + resolved);
+    });
+
+    // Wide tables scroll sideways on small screens instead of breaking the layout.
+    $$("table", article).forEach(t => { const w = document.createElement("div"); w.className = "table-wrap"; t.replaceWith(w); w.appendChild(t); });
+
+    // Syntax highlighting and copy buttons for code blocks.
+    $$("pre code", article).forEach(code => {
+      if (window.hljs && /language-(?!text\b)/.test(code.className)) { try { hljs.highlightElement(code); } catch { /* unknown language */ } }
+      const b = document.createElement("button");
+      b.className = "copy-btn"; b.type = "button"; b.textContent = "Copy";
+      b.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(code.textContent); b.textContent = "Copied!"; }
+        catch { b.textContent = "Select & copy"; }
+        setTimeout(() => (b.textContent = "Copy"), 1500);
+      });
+      code.parentElement.appendChild(b);
+    });
+
+    // "On this page" list built from the note's own sections.
+    const sections = $$("h2", article);
+    const names = sections.map(h => h.textContent.replace(/^\d+\.\s*/, "").trim().toLowerCase());
+    const missing = EXPECTED_SECTIONS.filter(s => !names.includes(s.toLowerCase()));
+    const toc = sections.length ? `<details class="chapter-toc" open>
+        <summary>On this page (${sections.length} sections)</summary>
+        <ol>${sections.map(h => `<li><a href="${location.hash}" data-id="${escapeHtml(h.id)}">${escapeHtml(h.textContent.replace(/^\d+\.\s*/, ""))}</a></li>`).join("")}</ol>
+      </details>` : "";
+    // Never present a partial note as complete: list any standard sections it lacks.
+    const warning = missing.length ? `<div class="notice" role="note">
+        <span class="notice-icon" aria-hidden="true">!</span>
+        <div>
+          <h2>This note is incomplete</h2>
+          <p>It is missing ${plural(missing.length, "standard section")}: ${missing.map(escapeHtml).join(", ")}.</p>
+        </div>
+      </div>` : "";
+    $("#note-toc").innerHTML = warning + toc;
+    $$("#note-toc a[data-id]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); scrollToHeading(a.dataset.id); }));
   }
 
   function showNotFound(message) {
@@ -513,22 +731,38 @@ footer.site-foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid va
   // ---------- Router ----------
   function route() {
     const path = decodeURIComponent(location.hash.replace(/^#\/?/, "")).replace(/\/+$/, "");
-    const [section, id] = path.split("/");
+    const [section, id, sub] = path.split("/");
     closeNav();
 
     if (!path) { markCurrent("home"); showHome(); }
     else if (section === "topic" && topicBySlug(id)) { markCurrent(`topic/${id}`); showTopic(topicBySlug(id)); }
     else if (section === "problem" && id) {
       const p = problems.find(x => numberOf(x) === id);
-      const t = p && topicByName(p.topic);
+      const t = p && contextTopic(p, sub);
       markCurrent(t ? `topic/${t.slug}` : "");
-      showProblem(id);
+      showProblem(id, sub);
     }
     else { markCurrent(""); showNotFound("This page does not exist yet."); }
 
     window.scrollTo(0, 0);
     if (path) $("#main").focus({ preventScroll: true });
   }
+
+  // ---------- Sidebar search (available on every page) ----------
+  const sideSearch = $("#side-search");
+  const sideResults = $("#side-results");
+  function renderSideResults() {
+    const q = sideSearch.value.trim().toLowerCase();
+    sideResults.hidden = !q;
+    if (!q) { sideResults.innerHTML = ""; return; }
+    const label = p => `${cleanTitle(p.title)} ${numberOf(p)}`.toLowerCase();
+    const hits = problems.filter(p => q.split(/\s+/).every(w => label(p).includes(w)))
+      .sort((a, b) => label(b).includes(q) - label(a).includes(q)); // exact phrase matches first
+    sideResults.innerHTML = hits.length
+      ? hits.map(p => `<li><a class="nav-link" href="${problemHref(p)}"><span class="nav-icon" aria-hidden="true">${numberOf(p)}</span>${escapeHtml(cleanTitle(p.title))}</a></li>`).join("")
+      : `<li class="empty-hit">No problem titles match “${escapeHtml(sideSearch.value.trim())}”.</li>`;
+  }
+  sideSearch.addEventListener("input", renderSideResults);
 
   // ---------- Mobile navigation ----------
   const menuBtn = $("#menu-btn");
